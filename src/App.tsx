@@ -5,7 +5,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { Home } from "./pages/Home";
 import { CreateGroupPage } from "./pages/CreateGroupPage";
 import { FindGroupPage } from "./pages/FindGroupPage";
-
+import { TimerPage } from "./pages/TimerPage";
 function App() {
   return (
     <div>
@@ -17,10 +17,11 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
           <Route path="/find-group" element={<FindGroupPage />} />
+          <Route path="/record-study-time" element={<TimerPage />} /> {}
         </Routes>
       </div>
     </div>
   );
-};
+}
 
 export default App;
