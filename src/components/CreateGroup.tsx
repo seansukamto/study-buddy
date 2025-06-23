@@ -3,8 +3,8 @@ import type { ChangeEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../context/AuthContext";
-// Line below will be uncommented later. TBC. 
-// import { Community, fetchCommunities } from "./CommunityList";
+import type { Community } from "./CommunityList.tsx";
+import { fetchCommunities } from "./CommunityList.tsx";
 
 interface PostInput {
   title: string;
