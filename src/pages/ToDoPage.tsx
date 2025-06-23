@@ -5,6 +5,48 @@ export const ToDoPage = () => {
   const [tasks, setTasks] = useState<{ id: number; text: string; link?: string }[]>([]);
   const [newTask, setNewTask] = useState("");
   const [newLink, setNewLink] = useState("");
+  const [groups, setGroups] = useState<{ id: number; title: string; subtasks: { id: number; text: string; link?: string; isDone?: boolean }[]; isVisible?: boolean }[]>([]);
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  const [newGroupTitle, setNewGroupTitle] = useState("");
+  const [newSubtask, setNewSubtask] = useState("");
+  const [newSubtaskLink, setNewSubtaskLink] = useState("");
+
+  const handleToggleGroupVisibility = (groupId: number) => {
+    setGroups(
+      groups.map((group) =>
+        group.id === groupId ? { ...group, isVisible: !group.isVisible } : group
+      )
+    );
+  };
+
+  const handleDeleteGroup = (groupId: number) => {
+    setGroups(groups.filter((group) => group.id !== groupId));
+  };
+
+  const handleDeleteSubtask = (groupId: number, subtaskId: number) => {
+    setGroups(
+      groups.map((group) =>
+        group.id === groupId
+          ? { ...group, subtasks: group.subtasks.filter((subtask) => subtask.id !== subtaskId) }
+          : group
+      )
+    );
+  };
+
+  const handleToggleSubtaskDone = (groupId: number, subtaskId: number) => {
+    setGroups(
+      groups.map((group) =>
+        group.id === groupId
+          ? {
+              ...group,
+              subtasks: group.subtasks.map((subtask) =>
+                subtask.id === subtaskId ? { ...subtask, isDone: !subtask.isDone } : subtask
+              ),
+            }
+          : group
+      )
+    );
+  };
 
   const handleAddTask = () => {
     if (newTask.trim()) {
@@ -19,90 +61,219 @@ export const ToDoPage = () => {
     }
   };
 
-  const handleDeleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const handleToggleTaskSelection = (id: number) => {
+    if (selectedTasks.includes(id)) {
+      setSelectedTasks(selectedTasks.filter((taskId) => taskId !== id));
+    } else {
+      setSelectedTasks([...selectedTasks, id]);
+    }
   };
 
-  const handleEditTask = (id: number, updatedText: string, updatedLink?: string) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, text: updatedText, link: updatedLink } : task
-      )
-    );
+  const handleCreateGroup = () => {
+    if (newGroupTitle.trim() && selectedTasks.length > 0) {
+      const subtasks = tasks.filter((task) => selectedTasks.includes(task.id));
+      const newGroup = {
+        id: Date.now(),
+        title: newGroupTitle,
+        subtasks,
+        isVisible: false,
+      };
+      setGroups([...groups, newGroup]);
+      setTasks(tasks.filter((task) => !selectedTasks.includes(task.id)));
+      setSelectedTasks([]);
+      setNewGroupTitle("");
+    }
+  };
+
+  const handleAddSubtaskToGroup = (groupId: number) => {
+    if (newSubtask.trim()) {
+      const newSubtaskObj = {
+        id: Date.now(),
+        text: newSubtask,
+        link: newSubtaskLink.trim() || undefined,
+        isDone: false,
+      };
+      setGroups(
+        groups.map((group) =>
+          group.id === groupId
+            ? { ...group, subtasks: [...group.subtasks, newSubtaskObj] }
+            : group
+        )
+      );
+      setNewSubtask("");
+      setNewSubtaskLink("");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-600 to-red-500 flex flex-col items-center pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-600 to-red-500 flex flex-col items-center pt-20 overflow-y-auto">
       <h1 className="text-4xl font-bold text-white mb-12">To-Do List</h1>
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Add a Task</h2>
-        <input
-          type="text"
-          placeholder="Enter task"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
-        />
-        <input
-          type="text"
-          placeholder="Enter link (optional)"
-          value={newLink}
-          onChange={(e) => setNewLink(e.target.value)}
-          className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
-        />
-        <button
-          onClick={handleAddTask}
-          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-md w-full"
-        >
-          Add Task
-        </button>
+      <div className="flex justify-between items-start w-full max-w-5xl gap-8">
+        {/* Add a Task Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
+          <h2 className="text-xl font-bold mb-4">Add a Task</h2>
+          <input
+            type="text"
+            placeholder="Enter task"
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+          />
+          <input
+            type="text"
+            placeholder="Enter link (optional)"
+            value={newLink}
+            onChange={(e) => setNewLink(e.target.value)}
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+          />
+          <button
+            onClick={handleAddTask}
+            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-md w-full"
+          >
+            Add Task
+          </button>
+        </div>
+
+        {/* Your Tasks Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
+          <h2 className="text-xl font-bold mb-4">Your Tasks</h2>
+          <ul>
+            {tasks.map((task) => (
+              <li key={task.id} className="text-lg mb-4 flex justify-between items-center">
+                <div>
+                  <input
+                    type="checkbox"
+                    checked={selectedTasks.includes(task.id)}
+                    onChange={() => handleToggleTaskSelection(task.id)}
+                    className="mr-2"
+                  />
+                  {task.link ? (
+                    <a
+                      href={task.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      {task.text}
+                    </a>
+                  ) : (
+                    <span>{task.text}</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <h2 className="text-xl font-bold mt-8 mb-4">Create a Group</h2>
+          <input
+            type="text"
+            placeholder="Enter group title"
+            value={newGroupTitle}
+            onChange={(e) => setNewGroupTitle(e.target.value)}
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+          />
+          <button
+            onClick={handleCreateGroup}
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md w-full"
+          >
+            Create Group
+          </button>
+        </div>
       </div>
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mt-8">
-        <h2 className="text-xl font-bold mb-4">Your Tasks</h2>
+
+      {/* Groups Section */}
+      <div className="bg-gray-100 rounded-lg shadow-lg p-6 w-full max-w-5xl mt-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-gray-300 pb-2">
+          Your Groups
+        </h2>
         <ul>
-          {tasks.map((task) => (
-            <li key={task.id} className="text-lg mb-4 flex justify-between items-center">
-              <div>
-                {task.link ? (
-                  <a
-                    href={task.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
+          {groups.map((group) => (
+            <li key={group.id} className="text-lg mb-4">
+              <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-md">
+                <span className="font-bold text-gray-800">{group.title}</span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleToggleGroupVisibility(group.id)}
+                    className="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-lg shadow-md text-sm"
                   >
-                    {task.text}
-                  </a>
-                ) : (
-                  <span>{task.text}</span>
-                )}
+                    {group.isVisible ? "Hide" : "View"}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteGroup(group.id)}
+                    className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    handleEditTask(
-                      task.id,
-                      prompt("Edit task:", task.text) || task.text,
-                      prompt("Edit link (optional):", task.link || "") || task.link
-                    )
-                  }
-                  className="px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg shadow-md text-sm"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md text-sm"
-                >
-                  Delete
-                </button>
-              </div>
+              {group.isVisible && (
+                <div className="mt-4 pl-4">
+                  <ul>
+                    {group.subtasks.map((subtask) => (
+                      <li key={subtask.id} className="text-sm mb-2 flex justify-between items-center">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={subtask.isDone}
+                            onChange={() => handleToggleSubtaskDone(group.id, subtask.id)}
+                            className="mr-2"
+                          />
+                          {subtask.link ? (
+                            <a
+                              href={subtask.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-blue-500 underline ${subtask.isDone ? "line-through text-gray-500" : ""}`}
+                            >
+                              {subtask.text}
+                            </a>
+                          ) : (
+                            <span className={`${subtask.isDone ? "line-through text-gray-500" : ""}`}>
+                              {subtask.text}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteSubtask(group.id, subtask.id)}
+                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md text-sm"
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-bold mb-2">Add Subtask</h3>
+                    <input
+                      type="text"
+                      placeholder="Enter subtask"
+                      value={newSubtask}
+                      onChange={(e) => setNewSubtask(e.target.value)}
+                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter link (optional)"
+                      value={newSubtaskLink}
+                      onChange={(e) => setNewSubtaskLink(e.target.value)}
+                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+                    />
+                    <button
+                      onClick={() => handleAddSubtaskToGroup(group.id)}
+                      className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-md w-full"
+                    >
+                      Add Subtask
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </div>
+
       <div className="mt-12">
         <Link
-          to="/record-study-time" // Corrected route
+          to="/record-study-time"
           className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md flex items-center"
         >
           <span className="mr-2">
