@@ -6,6 +6,9 @@ import { Home } from "./pages/Home";
 import { CreateGroupPage } from "./pages/CreateGroupPage";
 import { FindGroupPage } from "./pages/FindGroupPage";
 import { TimerPage } from "./pages/TimerPage";
+import { CalendarPage } from "./pages/CalendarPage";
+import { ToDoPage } from "./pages/ToDoPage";
+
 function App() {
   return (
     <div>
@@ -17,7 +20,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
           <Route path="/find-group" element={<FindGroupPage />} />
-          <Route path="/record-study-time" element={<TimerPage />} /> {}
+          <Route path="/record-study-time" element={<TimerPage />} /> {/* TimerPage route */}
+          <Route path="/calendar" element={<CalendarPage />} /> {/* CalendarPage route */}
+          <Route path="/todo" element={<ToDoPage />} /> {/* ToDoPage route */}
         </Routes>
       </div>
     </div>
