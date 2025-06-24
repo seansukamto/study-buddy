@@ -11,6 +11,7 @@ interface PostInput {
   date: string;  
   location: string;  
   content: string;
+  image_url: string | null;
   avatar_url: string | null;
   community_id?: number | null;
 }
@@ -65,11 +66,12 @@ export const CreateGroup = () => {
     mutate({
       post: {
         title,
+        date,
+        location,
         content,
+        image_url: null,
         avatar_url: user?.user_metadata.avatar_url || null,
         community_id: communityId,
-        date,     
-        location,  
       },
       imageFile: selectedFile,
     });

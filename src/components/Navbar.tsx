@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export const Navbar = () => {
@@ -24,22 +24,22 @@ export const Navbar = () => {
               Home
             </Link>
             <Link
-              to="/create"
+              to="/create-group"
               className="text-gray-300 hover:text-white transition-colors"
             >
               Create Group
             </Link>
             <Link
-              to="/groups"
+              to="/find-group/:id"
               className="text-gray-300 hover:text-white transition-colors"
             >
               Find Group
             </Link>
             <Link
-              to="/other"
+              to="/communities"
               className="text-gray-300 hover:text-white transition-colors"
             >
-              Other
+              Communities
             </Link>
           </div>
 
@@ -133,7 +133,7 @@ export const Navbar = () => {
               to="/community/create"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
-              Other
+              Communities
             </Link>
           </div>
         </div>
