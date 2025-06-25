@@ -54,7 +54,7 @@ export const CreateGroup = () => {
     queryFn: fetchCommunities,
   });
 
-  const { mutate, isPending, isError } = useMutation({
+  const { mutate, isPending, isError, error } = useMutation({
     mutationFn: (data: { post: PostInput; imageFile: File }) => {
       return createGroup(data.post, data.imageFile);
     },
@@ -99,7 +99,7 @@ export const CreateGroup = () => {
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full border border-white/10 bg-transparent p-2 rounded"
+          className="w-full border-2 border-gray-500 focus:border-blue-500 bg-transparent p-2 rounded outline-none text-white"
           required
         />
       </div>
@@ -108,11 +108,11 @@ export const CreateGroup = () => {
           Date
         </label>
         <input
-          type="string"
+          type="date"
           id="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full border border-white/10 bg-transparent p-2 rounded"
+          className="w-full border-2 border-gray-500 focus:border-blue-500 bg-transparent p-2 rounded outline-none text-white"
           required
         />
       </div>
@@ -125,7 +125,7 @@ export const CreateGroup = () => {
           id="location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full border border-white/10 bg-transparent p-2 rounded"
+          className="w-full border-2 border-gray-500 focus:border-blue-500 bg-transparent p-2 rounded outline-none text-white"
           required
         />
       </div>
@@ -137,7 +137,7 @@ export const CreateGroup = () => {
           id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full border border-white/10 bg-transparent p-2 rounded"
+          className="w-full border-2 border-gray-500 focus:border-blue-500 bg-transparent p-2 rounded outline-none text-white"
           rows={5}
           required
         />
@@ -174,7 +174,7 @@ export const CreateGroup = () => {
         {isPending ? "Creating..." : "Create Group"}
       </button>
 
-      {isError && <p className="text-red-500"> Error creating group.</p>}
+      {isError && <p className="text-red-500"> Error creating group: {error?.message}</p>}
     </form>
   );
 };
