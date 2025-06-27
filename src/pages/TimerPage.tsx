@@ -78,7 +78,7 @@ export const TimerPage = () => {
       const currentDate = new Date().toLocaleDateString("en-CA"); // Format date as YYYY-MM-DD
       const updatedDailyTimes = {
         ...dailyTimes,
-        [currentDate]: Object.values(updatedSubjectTimes).reduce((acc, curr) => acc + curr, 0), // Aggregate total study time
+        [currentDate]: (dailyTimes[currentDate] || 0) + time, // Preserve past records and update current day
       };
       setDailyTimes(updatedDailyTimes);
       localStorage.setItem("dailyTimes", JSON.stringify(updatedDailyTimes));
@@ -89,7 +89,6 @@ export const TimerPage = () => {
 
   const totalStudyTime = Object.values(subjectTimes).reduce((acc, curr) => acc + curr, 0);
 
-  // Helper function to format time as HH:MM:SS
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
