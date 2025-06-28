@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useParams, useNavigate } from "react-router-dom";
 import type { Post } from "./PostList";
 import { supabase } from "../supabaseClient";
 import { LikeButton } from "./LikeButton.tsx";
 import { CommentSection } from "./CommentSection";
-
-interface Props {
-  postId: number;
-}
+import { useAuth } from "../context/AuthContext";
+import { DeleteButton } from "./DeleteButton";
 
 const fetchPostById = async (id: number): Promise<Post> => {
   const { data, error } = await supabase
@@ -20,11 +19,18 @@ const fetchPostById = async (id: number): Promise<Post> => {
   return data as Post;
 };
 
-export const PostDetail = ({ postId }: Props) => {
+export const PostDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const postId = Number(id);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const { data, error, isLoading } = useQuery<Post, Error>({
     queryKey: ["post", postId],
     queryFn: () => fetchPostById(postId),
+    enabled: !!postId,
   });
+
 
   if (isLoading) {
     return <div> Loading posts...</div>;
@@ -51,6 +57,9 @@ export const PostDetail = ({ postId }: Props) => {
         Posted on: {new Date(data!.created_at).toLocaleDateString()}
       </p>
 
+      {user?.id === data?.user_id && (
+        <DeleteButton postId={postId} onDeleted={() => navigate("/find-group")} />
+      )}
       <LikeButton postId={postId} />
       <CommentSection postId={postId} />
     </div>

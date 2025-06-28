@@ -3,28 +3,28 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "../supabaseClient";
 
-interface CommunityInput {
+interface DiscussionInput {
   name: string;
   description: string;
 }
-const createCommunity = async (community: CommunityInput) => {
-  const { error, data } = await supabase.from("communities").insert(community);
+const createDiscussion = async (discussion: DiscussionInput) => {
+  const { error, data } = await supabase.from("discussions").insert(discussion);
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const CreateCommunity = () => {
+export const CreateDiscussion = () => {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { mutate, isPending, isError } = useMutation({
-    mutationFn: createCommunity,
+    mutationFn: createDiscussion,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communities"] });
-      navigate("/communities");
+      queryClient.invalidateQueries({ queryKey: ["discussions"] });
+      navigate("/discussion");
     },
   });
 
@@ -35,11 +35,11 @@ export const CreateCommunity = () => {
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4">
       <h2 className="text-6xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-        Create New Community
+        Create New Discussion
       </h2>
       <div>
         <label htmlFor="name" className="block mb-2 font-medium">
-          Community Name
+          Discussion Name
         </label>
         <input
           type="text"
@@ -66,9 +66,9 @@ export const CreateCommunity = () => {
         type="submit"
         className="bg-purple-500 text-white px-4 py-2 rounded cursor-pointer"
       >
-        {isPending ? "Creating..." : "Create Community"}
+        {isPending ? "Creating..." : "Create Discussion"}
       </button>
-      {isError && <p className="text-red-500">Error creating community.</p>}
+      {isError && <p className="text-red-500">Error creating discussion.</p>}
     </form>
   );
 };

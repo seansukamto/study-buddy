@@ -39,7 +39,7 @@ export const LandingPage = () => {
             onClick={() => navigate("/login")}
             className="w-64 py-3 bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 text-white font-semibold rounded-lg transition"
           >
-            Log In
+            Let's Go!
           </button>
         </div>
       </div>

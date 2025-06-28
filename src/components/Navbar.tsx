@@ -1,15 +1,42 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { signOut, user } = useAuth();
+  const { signInWithGitHub, signOut, user } = useAuth();
 
   const displayName = user?.user_metadata.user_name || user?.email;
+
+  // Helper to determine if a route is active
+  const isActive = (path: string) => {
+    if (path === "/find-group/1") {
+      return location.pathname.startsWith("/find-group");
+    }
+    if (path === "/discussion/create") {
+      return location.pathname === "/discussion/create";
+    }
+    if (path === "/discussions") {
+      return location.pathname === "/discussions";
+    }
+    if (path === "/create-group") {
+      return location.pathname === "/create-group";
+    }
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname === path;
+  };
+
+  const linkClass = (path: string) =>
+    "transition-colors px-3 py-2 rounded-md whitespace-nowrap " +
+    (isActive(path)
+      ? "border-b-4 border-purple-500 text-white"
+      : "text-gray-300 hover:text-white hover:border-b-4 hover:border-purple-500 border-b-4 border-transparent");
+
   return (
     <nav className="fixed top-0 w-full z-40 bg-[rgba(10,10,10,0.8)] backdrop-blur-lg border-b border-white/10 shadow-lg">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="font-mono text-xl font-bold text-white">
             Study<span className="text-purple-500">Buddy</span>
@@ -17,29 +44,20 @@ export const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
+            <Link to="/" className={linkClass("/")}>
               Home
             </Link>
-            <Link
-              to="/create-group"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
+            <Link to="/create-group" className={linkClass("/create-group")}>
               Create Group
             </Link>
-            <Link
-              to="/find-group/:id"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Find Group
+            <Link to="/find-group/1" className={linkClass("/find-group/1")}>
+              Groups
             </Link>
-            <Link
-              to="/communities"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Communities
+            <Link to="/discussion/create" className={linkClass("/discussion/create")}>
+              Create Discussion
+            </Link>
+            <Link to="/discussions" className={linkClass("/discussions")}>
+              Discussions
             </Link>
           </div>
 
@@ -57,17 +75,18 @@ export const Navbar = () => {
                 <span className="text-gray-300">{displayName}</span>
                 <button
                   onClick={signOut}
-                  className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-600"
+                  className="bg-red-500 px-3 py-1 rounded"
                 >
                   Sign Out
                 </button>
               </div>
             ) : (
-              <Link to="/login">
-                <button className="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600">
-                  Sign In
-                </button>
-              </Link>
+              <button
+                onClick={signInWithGitHub}
+                className="bg-blue-500 px-3 py-1 rounded"
+              >
+                Sign in with GitHub
+              </button>
             )}
           </div>
 
@@ -110,26 +129,23 @@ export const Navbar = () => {
       {menuOpen && (
         <div className="md:hidden bg-[rgba(10,10,10,0.9)]">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link
-              to="/"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-            >
+            <Link to="/" className={linkClass("/")}>
               Home
             </Link>
             <Link
-              to="/create-group"
+              to="/create"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Create Group
             </Link>
             <Link
-              to="/find-group/:id"
+              to="/communities"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Find Group
             </Link>
             <Link
-              to="/communities"
+              to="/community/create"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Communities

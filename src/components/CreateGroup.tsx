@@ -3,35 +3,41 @@ import type { ChangeEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import type { Community } from "./CommunityList.tsx";
-import { fetchCommunities } from "./CommunityList.tsx";
+import type { Discussion } from "./DiscussionList.tsx";
+import { fetchDiscussions } from "./DiscussionList.tsx";
 
 interface PostInput {
   title: string;
-  date: string;  
-  location: string;  
+  date: string;
+  location: string;
   content: string;
   image_url: string | null;
   avatar_url: string | null;
-  community_id?: number | null;
+  discussion_id?: number | null;
+  user_id?: string | null;
 }
 
-const createGroup = async (post: PostInput, imageFile: File) => {
-  const filePath = `${post.title}-${Date.now()}-${imageFile.name}`;
+const createGroup = async (post: PostInput, imageFile: File | null) => {
+  let imageUrl = null;
 
-  const { error: uploadError } = await supabase.storage
-    .from("post-images")
-    .upload(filePath, imageFile);
+  if (imageFile) {
+    const filePath = `${post.title}-${Date.now()}-${imageFile.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(filePath, imageFile);
 
-  if (uploadError) throw new Error(uploadError.message);
+    if (uploadError) throw new Error(uploadError.message);
 
-  const { data: publicURLData } = supabase.storage
-    .from("post-images")
-    .getPublicUrl(filePath);
+    const { data: publicURLData } = supabase.storage
+      .from("post-images")
+      .getPublicUrl(filePath);
+
+    imageUrl = publicURLData.publicUrl;
+  }
 
   const { data, error } = await supabase
     .from("groups")
-    .insert({ ...post, image_url: publicURLData.publicUrl });
+    .insert({ ...post, image_url: imageUrl });
 
   if (error) throw new Error(error.message);
 
@@ -40,29 +46,28 @@ const createGroup = async (post: PostInput, imageFile: File) => {
 
 export const CreateGroup = () => {
   const [title, setTitle] = useState<string>("");
-  const [date, setDate] = useState<string>("");       
-  const [location, setLocation] = useState<string>(""); 
+  const [date, setDate] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
   const [content, setContent] = useState<string>("");
-  const [communityId, setCommunityId] = useState<number | null>(null);
+  const [discussionId, setDiscussionId] = useState<number | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { user } = useAuth();
 
-  const { data: communities } = useQuery<Community[], Error>({
-    queryKey: ["communities"],
-    queryFn: fetchCommunities,
+  const { data: discussions } = useQuery<Discussion[], Error>({
+    queryKey: ["discussions"],
+    queryFn: fetchDiscussions,
   });
 
   const { mutate, isPending, isError, error } = useMutation({
-    mutationFn: (data: { post: PostInput; imageFile: File }) => {
+    mutationFn: (data: { post: PostInput; imageFile: File | null }) => {
       return createGroup(data.post, data.imageFile);
     },
   });
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();     // Do not reload the page when submitting the form
-    if (!selectedFile) return;
+    event.preventDefault();
     mutate({
       post: {
         title,
@@ -71,15 +76,16 @@ export const CreateGroup = () => {
         content,
         image_url: null,
         avatar_url: user?.user_metadata.avatar_url || null,
-        community_id: communityId,
+        discussion_id: discussionId,
+        user_id: user?.id,
       },
       imageFile: selectedFile,
     });
   };
 
-  const handleCommunityChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleDiscussionChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setCommunityId(value ? Number(value) : null);
+    setDiscussionId(value ? Number(value) : null);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -144,12 +150,12 @@ export const CreateGroup = () => {
       </div>
 
       <div>
-        <label> Select Community</label>
-        <select id="community" onChange={handleCommunityChange}>
-          <option value={""}> -- Choose a Community -- </option>
-          {communities?.map((community, key) => (
-            <option key={key} value={community.id}>
-              {community.name}
+        <label>Select Discussion</label>
+        <select id="discussion" onChange={handleDiscussionChange}>
+          <option value={""}> -- Choose a Discussion -- </option>
+          {discussions?.map((discussion, key) => (
+            <option key={key} value={discussion.id}>
+              {discussion.name}
             </option>
           ))}
         </select>
@@ -174,7 +180,9 @@ export const CreateGroup = () => {
         {isPending ? "Creating..." : "Create Group"}
       </button>
 
-      {isError && <p className="text-red-500"> Error creating group: {error?.message}</p>}
+      {isError && (
+        <p className="text-red-500"> Error creating group: {error?.message}</p>
+      )}
     </form>
   );
 };

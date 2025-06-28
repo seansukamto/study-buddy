@@ -2,15 +2,17 @@ import { Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
+import { SignupPage } from "./pages/SignupPage";
 import { Home } from "./pages/Home";
 import { CreateGroupPage } from "./pages/CreateGroupPage";
 import { FindGroupPage } from "./pages/FindGroupPage";
+import { PostDetail } from "./components/PostDetail";
 import { TimerPage } from "./pages/TimerPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import { ToDoPage } from "./pages/ToDoPage";
-import { CreateCommunityPage } from "./pages/CreateCommunityPage";
-import { CommunitiesPage } from "./pages/CommunitiesPage";
-import { CommunityPage } from "./pages/CommunityPage";
+import { CreateDiscussionPage } from "./pages/CreateDiscussionPage";
+import { DiscussionsPage } from "./pages/DiscussionsPage";
+import { DiscussionPage } from "./pages/DiscussionPage";
 
 function App() {
   return (
@@ -20,15 +22,17 @@ function App() {
         <Routes>
           <Route path="/landing-page" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
           <Route path="/find-group/:id" element={<FindGroupPage />} />
+          <Route path="/group/:id" element={<PostDetail />} />
           <Route path="/record-study-time" element={<TimerPage />} />
           <Route path="/calendar" element={<CalendarPage />} /> 
           <Route path="/todo" element={<ToDoPage />} /> 
-          <Route path="/community/create" element={<CreateCommunityPage />} /> 
-          <Route path="/communities" element={<CommunitiesPage />} />
-          <Route path="/community/:id" element={<CommunityPage />} />
+          <Route path="/discussion/create" element={<CreateDiscussionPage />} /> 
+          <Route path="/discussions" element={<DiscussionsPage />} />
+          <Route path="/discussion/:id" element={<DiscussionPage />} />
         </Routes>
       </div>
     </div>

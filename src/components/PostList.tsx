@@ -7,6 +7,7 @@ export interface Post {
   title: string;
   content: string;
   created_at: string;
+  user_id: string;
   image_url: string;
   avatar_url?: string;
   like_count?: number;
