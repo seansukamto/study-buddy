@@ -64,6 +64,9 @@ export const Navbar = () => {
             <Link to="/find-group/1" className={linkClass("/find-group/1")}>
               Groups
             </Link>
+            <Link to="/record-study-time" className={linkClass("/record-study-time")}>
+              Record
+            </Link>
             <Link to="/discussion/create" className={linkClass("/discussion/create")}>
               Create Discussion
             </Link>
@@ -160,6 +163,12 @@ export const Navbar = () => {
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Communities
+            </Link>
+            <Link
+              to="/record-study-time"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+            >
+              Record
             </Link>
             {!user && (
               <Link
