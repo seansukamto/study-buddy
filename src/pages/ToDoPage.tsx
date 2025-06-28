@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 export const ToDoPage = () => {
   const [tasks, setTasks] = useState<{ id: number; text: string; link?: string }[]>([]);
@@ -11,6 +12,45 @@ export const ToDoPage = () => {
   const [newSubtask, setNewSubtask] = useState("");
   const [newSubtaskLink, setNewSubtaskLink] = useState("");
 
+  useEffect(() => {
+    (async () => {
+      // load Todos
+      const { data: allTodos, error: todosError } = await supabase
+        .from("Todos")
+        .select("*");
+      if (todosError) return console.error(todosError);
+      const todosArr = allTodos ?? [];
+      setTasks(
+        todosArr
+          .filter((t) => t.group_id === null)
+          .map(({ id, text, link }) => ({ id, text, link }))
+      );
+
+      // load Groups
+      const { data: allGroups, error: groupsError } = await supabase
+        .from("Groups")
+        .select("*");
+      if (groupsError) return console.error(groupsError);
+      const groupsArr = allGroups ?? [];
+      const groupsWithSub = await Promise.all(
+        groupsArr.map(async (g) => {
+          const { data: subs } = await supabase
+            .from("Todos")
+            .select("*")
+            .eq("group_id", g.id);
+          const subsArr = subs ?? [];
+          return {
+            id: g.id,
+            title: g.title,
+            subtasks: subsArr.map((s) => ({ id: s.id, text: s.text, link: s.link, isDone: s.is_done })),
+            isVisible: false,
+          };
+        })
+      );
+      setGroups(groupsWithSub);
+    })();
+  }, []);
+
   const handleToggleGroupVisibility = (groupId: number) => {
     setGroups(
       groups.map((group) =>
@@ -19,46 +59,58 @@ export const ToDoPage = () => {
     );
   };
 
-  const handleDeleteGroup = (groupId: number) => {
-    setGroups(groups.filter((group) => group.id !== groupId));
+  const handleDeleteGroup = async (groupId: number) => {
+    const { error } = await supabase.from("Groups").delete().eq("id", groupId);
+    if (error) return console.error(error);
+    setGroups(groups.filter((g) => g.id !== groupId));
   };
 
-  const handleDeleteSubtask = (groupId: number, subtaskId: number) => {
+  const handleDeleteSubtask = async (groupId: number, subtaskId: number) => {
+    const { error } = await supabase.from("Todos").delete().eq("id", subtaskId);
+    if (error) return console.error(error);
     setGroups(
-      groups.map((group) =>
-        group.id === groupId
-          ? { ...group, subtasks: group.subtasks.filter((subtask) => subtask.id !== subtaskId) }
-          : group
+      groups.map((g) =>
+        g.id === groupId
+          ? { ...g, subtasks: g.subtasks.filter((s) => s.id !== subtaskId) }
+          : g
       )
     );
   };
 
-  const handleToggleSubtaskDone = (groupId: number, subtaskId: number) => {
+  const handleToggleSubtaskDone = async (groupId: number, subtaskId: number) => {
+    const grp = groups.find((g) => g.id === groupId);
+    const sub = grp?.subtasks.find((s) => s.id === subtaskId);
+    const newDone = !sub?.isDone;
+    const { error } = await supabase
+      .from("Todos")
+      .update({ is_done: newDone })
+      .eq("id", subtaskId);
+    if (error) return console.error(error);
     setGroups(
-      groups.map((group) =>
-        group.id === groupId
+      groups.map((g) =>
+        g.id === groupId
           ? {
-              ...group,
-              subtasks: group.subtasks.map((subtask) =>
-                subtask.id === subtaskId ? { ...subtask, isDone: !subtask.isDone } : subtask
+              ...g,
+              subtasks: g.subtasks.map((s) =>
+                s.id === subtaskId ? { ...s, isDone: newDone } : s
               ),
             }
-          : group
+          : g
       )
     );
   };
 
-  const handleAddTask = () => {
-    if (newTask.trim()) {
-      const newTaskObj = {
-        id: Date.now(),
-        text: newTask,
-        link: newLink.trim() || undefined,
-      };
-      setTasks([...tasks, newTaskObj]);
-      setNewTask("");
-      setNewLink("");
-    }
+  const handleAddTask = async () => {
+    if (!newTask.trim()) return;
+    const { data, error } = await supabase
+      .from("Todos")
+      .insert([{ text: newTask, link: newLink || null }])
+      .select();
+    if (error) return console.error(error);
+    const inserted = data![0];
+    setTasks([...tasks, { id: inserted.id, text: inserted.text, link: inserted.link }]);
+    setNewTask("");
+    setNewLink("");
   };
 
   const handleToggleTaskSelection = (id: number) => {
@@ -69,40 +121,48 @@ export const ToDoPage = () => {
     }
   };
 
-  const handleCreateGroup = () => {
-    if (newGroupTitle.trim() && selectedTasks.length > 0) {
-      const subtasks = tasks.filter((task) => selectedTasks.includes(task.id));
-      const newGroup = {
-        id: Date.now(),
-        title: newGroupTitle,
-        subtasks,
-        isVisible: false,
-      };
-      setGroups([...groups, newGroup]);
-      setTasks(tasks.filter((task) => !selectedTasks.includes(task.id)));
-      setSelectedTasks([]);
-      setNewGroupTitle("");
-    }
+  const handleCreateGroup = async () => {
+    if (!newGroupTitle.trim() || selectedTasks.length === 0) return;
+    // insert group
+    const { data: grp, error: ge } = await supabase
+      .from("Groups")
+      .insert([{ title: newGroupTitle }])
+      .select();
+    if (ge) return console.error(ge);
+    const newGroupId = grp![0].id;
+    // assign selected tasks
+    const { error: ue } = await supabase
+      .from("Todos")
+      .update({ group_id: newGroupId })
+      .in("id", selectedTasks);
+    if (ue) return console.error(ue);
+    // update state
+    const subtasks = tasks.filter((t) => selectedTasks.includes(t.id));
+    setGroups([...groups, { id: newGroupId, title: newGroupTitle, subtasks, isVisible: false }]);
+    setTasks(tasks.filter((t) => !selectedTasks.includes(t.id)));
+    setSelectedTasks([]);
+    setNewGroupTitle("");
   };
 
-  const handleAddSubtaskToGroup = (groupId: number) => {
-    if (newSubtask.trim()) {
-      const newSubtaskObj = {
-        id: Date.now(),
-        text: newSubtask,
-        link: newSubtaskLink.trim() || undefined,
-        isDone: false,
-      };
-      setGroups(
-        groups.map((group) =>
-          group.id === groupId
-            ? { ...group, subtasks: [...group.subtasks, newSubtaskObj] }
-            : group
-        )
-      );
-      setNewSubtask("");
-      setNewSubtaskLink("");
-    }
+  const handleAddSubtaskToGroup = async (groupId: number) => {
+    if (!newSubtask.trim()) return;
+    const { data, error } = await supabase
+      .from("Todos")
+      .insert([
+        { text: newSubtask, link: newSubtaskLink || null, group_id: groupId },
+      ])
+      .select();
+    if (error) return console.error(error);
+    const inserted = data![0];
+    setGroups(
+      groups.map((g) =>
+        g.id === groupId
+          ? { ...g, subtasks: [...g.subtasks, { id: inserted.id, text: inserted.text, link: inserted.link, isDone: inserted.is_done }] }
+          : g
+      )
+    );
+    setNewSubtask("");
+    setNewSubtaskLink("");
   };
 
   return (

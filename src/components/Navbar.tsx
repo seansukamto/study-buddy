@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { signInWithGitHub, signOut, user } = useAuth();
+  const { signOut, user } = useAuth();
 
   const displayName = user?.user_metadata.user_name || user?.email;
   return (
@@ -57,18 +57,17 @@ export const Navbar = () => {
                 <span className="text-gray-300">{displayName}</span>
                 <button
                   onClick={signOut}
-                  className="bg-red-500 px-3 py-1 rounded"
+                  className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-600"
                 >
                   Sign Out
                 </button>
               </div>
             ) : (
-              <button
-                onClick={signInWithGitHub}
-                className="bg-blue-500 px-3 py-1 rounded"
-              >
-                Sign in with GitHub
-              </button>
+              <Link to="/login">
+                <button className="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600">
+                  Sign In
+                </button>
+              </Link>
             )}
           </div>
 
@@ -118,23 +117,31 @@ export const Navbar = () => {
               Home
             </Link>
             <Link
-              to="/create"
+              to="/create-group"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Create Group
             </Link>
             <Link
-              to="/communities"
+              to="/find-group/:id"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Find Group
             </Link>
             <Link
-              to="/community/create"
+              to="/communities"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
             >
               Communities
             </Link>
+            {!user && (
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

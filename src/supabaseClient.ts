@@ -16,8 +16,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     // don’t remember sessions across reloads
     persistSession: true,
     // don’t try silent-refresh in the background
-    // autoRefreshToken: true,
+    autoRefreshToken: true,
     // don’t parse the URL for OAuth return on load
-    // detectSessionInUrl: true,
+    detectSessionInUrl: true,
   },
 });
