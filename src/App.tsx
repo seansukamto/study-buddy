@@ -20,10 +20,10 @@ function App() {
       <Navbar />
       <div className="container mx-auto px-4 py-6">
         <Routes>
-          <Route path="/landing-page" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
           <Route path="/find-group/:id" element={<FindGroupPage />} />
           <Route path="/group/:id" element={<PostDetail />} />

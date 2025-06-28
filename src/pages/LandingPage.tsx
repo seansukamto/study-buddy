@@ -9,7 +9,7 @@ export const LandingPage = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        navigate("/");              // Redirect to home if session exists
+        navigate("/home");              // Redirect to home if session exists
       } else {
         setCheckingSession(false);  // No session found, show landing page
       }
