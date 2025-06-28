@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { PostList } from "../components/PostList";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -42,13 +41,6 @@ export const Home = () => {
             Find Group
           </button>
         </div>
-      </div>
-      {/* Recent Posts Section */}
-      <div className="w-full max-w-4xl px-4">
-        <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-          Recent Posts
-        </h2>
-        <PostList />
       </div>
     </div>
   );
