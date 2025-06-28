@@ -1,10 +1,8 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import type { Discussion } from "./DiscussionList.tsx";
-import { fetchDiscussions } from "./DiscussionList.tsx";
 
 interface PostInput {
   title: string;
@@ -13,7 +11,6 @@ interface PostInput {
   content: string;
   image_url: string | null;
   avatar_url: string | null;
-  discussion_id?: number | null;
   user_id?: string | null;
 }
 
@@ -49,16 +46,10 @@ export const CreateGroup = () => {
   const [date, setDate] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [content, setContent] = useState<string>("");
-  const [discussionId, setDiscussionId] = useState<number | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { user } = useAuth();
-
-  const { data: discussions } = useQuery<Discussion[], Error>({
-    queryKey: ["discussions"],
-    queryFn: fetchDiscussions,
-  });
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: (data: { post: PostInput; imageFile: File | null }) => {
@@ -76,16 +67,10 @@ export const CreateGroup = () => {
         content,
         image_url: null,
         avatar_url: user?.user_metadata.avatar_url || null,
-        discussion_id: discussionId,
         user_id: user?.id,
       },
       imageFile: selectedFile,
     });
-  };
-
-  const handleDiscussionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setDiscussionId(value ? Number(value) : null);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -147,18 +132,6 @@ export const CreateGroup = () => {
           rows={5}
           required
         />
-      </div>
-
-      <div>
-        <label>Select Discussion</label>
-        <select id="discussion" onChange={handleDiscussionChange}>
-          <option value={""}> -- Choose a Discussion -- </option>
-          {discussions?.map((discussion, key) => (
-            <option key={key} value={discussion.id}>
-              {discussion.name}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>
