@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import logo from "../assets/logo.jpg";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -34,6 +35,13 @@ export const LandingPage = () => {
         <p className="text-gray-600 text-center mb-8">
           Your one-stop place to organize, review, and collaborate on study materials.
         </p>
+        <div className="branding-container mb-6">
+          <img
+            src={logo}
+            alt="Study Buddy Branding"
+            className="w-32 md:w-40 lg:w-48 h-auto mx-auto rounded-xl shadow-md"
+          />
+        </div>
         <div className="flex justify-center">
           <button
             onClick={() => navigate("/login")}

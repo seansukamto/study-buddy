@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.jpg";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -40,7 +41,16 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="font-mono text-xl font-bold text-white">
-            Study<span className="text-purple-500">Buddy</span>
+            <div className="navbar-branding flex items-center">
+              <img
+                src={logo}
+                alt="Study Buddy Logo"
+                className="w-8 h-8 object-contain mr-2 rounded-full"
+              />
+              <span className="navbar-text">
+                Study<span className="text-purple-500"> Buddy</span>
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Links */}
