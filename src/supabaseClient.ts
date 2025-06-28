@@ -21,3 +21,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     detectSessionInUrl: true,
   },
 });
+
+const todosTable = "todos";
+const groupsTable = "todo-groups";

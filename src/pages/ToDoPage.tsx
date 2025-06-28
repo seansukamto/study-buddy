@@ -16,7 +16,7 @@ export const ToDoPage = () => {
     (async () => {
       // load Todos
       const { data: allTodos, error: todosError } = await supabase
-        .from("Todos")
+        .from("todos")
         .select("*");
       if (todosError) return console.error(todosError);
       const todosArr = allTodos ?? [];
@@ -28,14 +28,14 @@ export const ToDoPage = () => {
 
       // load Groups
       const { data: allGroups, error: groupsError } = await supabase
-        .from("Groups")
+        .from("todo-groups")
         .select("*");
       if (groupsError) return console.error(groupsError);
       const groupsArr = allGroups ?? [];
       const groupsWithSub = await Promise.all(
         groupsArr.map(async (g) => {
           const { data: subs } = await supabase
-            .from("Todos")
+            .from("todos")
             .select("*")
             .eq("group_id", g.id);
           const subsArr = subs ?? [];
@@ -60,13 +60,13 @@ export const ToDoPage = () => {
   };
 
   const handleDeleteGroup = async (groupId: number) => {
-    const { error } = await supabase.from("Groups").delete().eq("id", groupId);
+    const { error } = await supabase.from("todo-groups").delete().eq("id", groupId);
     if (error) return console.error(error);
     setGroups(groups.filter((g) => g.id !== groupId));
   };
 
   const handleDeleteSubtask = async (groupId: number, subtaskId: number) => {
-    const { error } = await supabase.from("Todos").delete().eq("id", subtaskId);
+    const { error } = await supabase.from("todos").delete().eq("id", subtaskId);
     if (error) return console.error(error);
     setGroups(
       groups.map((g) =>
@@ -82,7 +82,7 @@ export const ToDoPage = () => {
     const sub = grp?.subtasks.find((s) => s.id === subtaskId);
     const newDone = !sub?.isDone;
     const { error } = await supabase
-      .from("Todos")
+      .from("todos")
       .update({ is_done: newDone })
       .eq("id", subtaskId);
     if (error) return console.error(error);
@@ -103,7 +103,7 @@ export const ToDoPage = () => {
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
     const { data, error } = await supabase
-      .from("Todos")
+      .from("todos")
       .insert([{ text: newTask, link: newLink || null }])
       .select();
     if (error) return console.error(error);
@@ -125,14 +125,14 @@ export const ToDoPage = () => {
     if (!newGroupTitle.trim() || selectedTasks.length === 0) return;
     // insert group
     const { data: grp, error: ge } = await supabase
-      .from("Groups")
+      .from("todo-groups")
       .insert([{ title: newGroupTitle }])
       .select();
     if (ge) return console.error(ge);
     const newGroupId = grp![0].id;
     // assign selected tasks
     const { error: ue } = await supabase
-      .from("Todos")
+      .from("todos")
       .update({ group_id: newGroupId })
       .in("id", selectedTasks);
     if (ue) return console.error(ue);
@@ -147,7 +147,7 @@ export const ToDoPage = () => {
   const handleAddSubtaskToGroup = async (groupId: number) => {
     if (!newSubtask.trim()) return;
     const { data, error } = await supabase
-      .from("Todos")
+      .from("todos")
       .insert([
         { text: newSubtask, link: newSubtaskLink || null, group_id: groupId },
       ])
@@ -165,26 +165,32 @@ export const ToDoPage = () => {
     setNewSubtaskLink("");
   };
 
+  const handleDeleteTask = async (taskId: number) => {
+    const { error } = await supabase.from("todos").delete().eq("id", taskId);
+    if (error) return console.error(error);
+    setTasks(tasks.filter((task) => task.id !== taskId));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-600 to-red-500 flex flex-col items-center pt-20 overflow-y-auto">
       <h1 className="text-4xl font-bold text-white mb-12">To-Do List</h1>
       <div className="flex justify-between items-start w-full max-w-5xl gap-8">
         {/* Add a Task Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
-          <h2 className="text-xl font-bold mb-4">Add a Task</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Add a Task</h2>
           <input
             type="text"
             placeholder="Enter task"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4 text-gray-800"
           />
           <input
             type="text"
             placeholder="Enter link (optional)"
             value={newLink}
             onChange={(e) => setNewLink(e.target.value)}
-            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4 text-gray-800"
           />
           <button
             onClick={handleAddTask}
@@ -196,7 +202,7 @@ export const ToDoPage = () => {
 
         {/* Your Tasks Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
-          <h2 className="text-xl font-bold mb-4">Your Tasks</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Your Tasks</h2>
           <ul>
             {tasks.map((task) => (
               <li key={task.id} className="text-lg mb-4 flex justify-between items-center">
@@ -217,19 +223,25 @@ export const ToDoPage = () => {
                       {task.text}
                     </a>
                   ) : (
-                    <span>{task.text}</span>
+                    <span className="text-gray-900">{task.text}</span>
                   )}
                 </div>
+                <button
+                  onClick={() => handleDeleteTask(task.id)}
+                  className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md text-sm"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
-          <h2 className="text-xl font-bold mt-8 mb-4">Create a Group</h2>
+          <h2 className="text-xl font-bold mt-8 mb-4 text-gray-900">Create a Group</h2>
           <input
             type="text"
             placeholder="Enter group title"
             value={newGroupTitle}
             onChange={(e) => setNewGroupTitle(e.target.value)}
-            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4 text-gray-800"
           />
           <button
             onClick={handleCreateGroup}
@@ -287,9 +299,7 @@ export const ToDoPage = () => {
                               {subtask.text}
                             </a>
                           ) : (
-                            <span className={`${subtask.isDone ? "line-through text-gray-500" : ""}`}>
-                              {subtask.text}
-                            </span>
+                            <span className="text-gray-900">{subtask.text}</span>
                           )}
                         </div>
                         <button
@@ -302,20 +312,20 @@ export const ToDoPage = () => {
                     ))}
                   </ul>
                   <div className="mt-4">
-                    <h3 className="text-lg font-bold mb-2">Add Subtask</h3>
+                    <h3 className="text-lg font-bold mb-2 text-gray-900">Add Subtask</h3>
                     <input
                       type="text"
                       placeholder="Enter subtask"
                       value={newSubtask}
                       onChange={(e) => setNewSubtask(e.target.value)}
-                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4 text-gray-800"
                     />
                     <input
                       type="text"
                       placeholder="Enter link (optional)"
                       value={newSubtaskLink}
                       onChange={(e) => setNewSubtaskLink(e.target.value)}
-                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4"
+                      className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-4 text-gray-800"
                     />
                     <button
                       onClick={() => handleAddSubtaskToGroup(group.id)}
