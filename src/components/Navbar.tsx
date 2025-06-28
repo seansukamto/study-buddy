@@ -4,11 +4,12 @@ import { useAuth } from "../context/AuthContext";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { signInWithGitHub, signOut, user } = useAuth();
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const displayName = user?.user_metadata.user_name || user?.email;
 
-  // Helper to determine if a route is active
   const isActive = (path: string) => {
     if (path === "/find-group/1") {
       return location.pathname.startsWith("/find-group");
@@ -82,10 +83,10 @@ export const Navbar = () => {
               </div>
             ) : (
               <button
-                onClick={signInWithGitHub}
+                onClick={() => navigate("/login")}
                 className="bg-blue-500 px-3 py-1 rounded"
               >
-                Sign in with GitHub
+                Log In
               </button>
             )}
           </div>
@@ -155,7 +156,7 @@ export const Navbar = () => {
                 to="/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center"
               >
-                Sign In
+                Log In
               </Link>
             )}
           </div>

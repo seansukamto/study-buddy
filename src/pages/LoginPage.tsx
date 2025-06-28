@@ -63,7 +63,7 @@ export const LoginPage = () => {
         <div className="flex flex-col space-y-4">
           <button
             onClick={handleLoginWithGitHub}
-            className="w-full py-3 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-lg transition"
+            className="w-full py-3 bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-lg transition"
           >
             Continue with GitHub
           </button>
