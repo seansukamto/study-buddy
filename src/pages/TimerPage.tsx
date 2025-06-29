@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 export const TimerPage = () => {
+  const currentDate = new Date().toLocaleDateString("en-CA");
+
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [subject, setSubject] = useState("");
   const [activeSubject, setActiveSubject] = useState("");
   const [subjectTimes, setSubjectTimes] = useState<{ [key: string]: number }>(
-    JSON.parse(localStorage.getItem("subjectTimes") || "{}")
+    JSON.parse(localStorage.getItem(`subjectTimes-${currentDate}`) || "{}")
   );
   const [dailyTimes, setDailyTimes] = useState<{ [key: string]: number }>(
-    JSON.parse(localStorage.getItem("dailyTimes") || "{}")
+    JSON.parse(localStorage.getItem(`dailyTimes-${currentDate}`) || "{}")
   );
 
   const handleStart = () => {
@@ -19,15 +22,61 @@ export const TimerPage = () => {
     }
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     setIsRunning(false);
+
+    if (activeSubject && time > 0) {
+      console.log("Stopping timer for:", currentDate, "Subject:", activeSubject, "Time:", time);
+
+      try {
+        const { data: existingData, error: fetchError } = await supabase
+          .from("study_times")
+          .select("id, time_spent")
+          .eq("date", currentDate)
+          .eq("subject", activeSubject)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error("Fetch error:", fetchError.message);
+          return;
+        }
+
+        const existingTime = existingData?.time_spent || 0;
+        const totalTime = existingTime + time;
+
+        if (existingData) {
+          const { error: updateError } = await supabase
+            .from("study_times")
+            .update({ time_spent: totalTime })
+            .eq("id", existingData.id);
+
+          if (updateError) {
+            console.error("Update failed:", updateError.message);
+          } else {
+            console.log("Updated", activeSubject, "→", totalTime);
+          }
+        } else {
+          const { error: insertError } = await supabase
+            .from("study_times")
+            .insert([{ date: currentDate, subject: activeSubject, time_spent: time }]);
+
+          if (insertError) {
+            console.error("Insert failed:", insertError.message);
+          } else {
+            console.log("Inserted new subject:", activeSubject, "→", time);
+          }
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    }
   };
 
   const handleReset = () => {
     if (activeSubject) {
       const updatedSubjectTimes = { ...subjectTimes, [activeSubject]: 0 };
       setSubjectTimes(updatedSubjectTimes);
-      localStorage.setItem("subjectTimes", JSON.stringify(updatedSubjectTimes));
+      localStorage.setItem(`subjectTimes-${currentDate}`, JSON.stringify(updatedSubjectTimes));
     }
     setTime(0);
     setIsRunning(false);
@@ -38,7 +87,7 @@ export const TimerPage = () => {
       if (!subjectTimes[subject]) {
         const updatedSubjectTimes = { ...subjectTimes, [subject]: 0 };
         setSubjectTimes(updatedSubjectTimes);
-        localStorage.setItem("subjectTimes", JSON.stringify(updatedSubjectTimes));
+        localStorage.setItem(`subjectTimes-${currentDate}`, JSON.stringify(updatedSubjectTimes));
       }
       setSubject(""); // Clear the input field after pressing Enter
     }
@@ -48,13 +97,47 @@ export const TimerPage = () => {
     const updatedSubjectTimes = { ...subjectTimes };
     delete updatedSubjectTimes[subjectToDelete];
     setSubjectTimes(updatedSubjectTimes);
-    localStorage.setItem("subjectTimes", JSON.stringify(updatedSubjectTimes));
+    localStorage.setItem(`subjectTimes-${currentDate}`, JSON.stringify(updatedSubjectTimes));
     if (activeSubject === subjectToDelete) {
       setActiveSubject("");
       setTime(0);
       setIsRunning(false);
     }
   };
+
+  useEffect(() => {
+    const localSubjects = localStorage.getItem(`subjectTimes-${currentDate}`);
+    const localDaily = localStorage.getItem(`dailyTimes-${currentDate}`);
+
+    // Only fetch if no localStorage for today
+    if (!localSubjects || !localDaily) {
+      supabase
+        .from("study_times")
+        .select("subject, time_spent")
+        .eq("date", currentDate)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error fetching subjects from Supabase:", error.message);
+            return;
+          }
+
+          if (data && data.length > 0) {
+            const restoredSubjects = data.reduce((acc: { [key: string]: number }, entry) => {
+              acc[entry.subject] = entry.time_spent;
+              return acc;
+            }, {});
+
+            setSubjectTimes(restoredSubjects);
+            localStorage.setItem(`subjectTimes-${currentDate}`, JSON.stringify(restoredSubjects));
+
+            const totalDailyTime = data.reduce((acc: number, entry) => acc + entry.time_spent, 0);
+            const updatedDailyTimes = { [currentDate]: totalDailyTime };
+            setDailyTimes(updatedDailyTimes);
+            localStorage.setItem(`dailyTimes-${currentDate}`, JSON.stringify(updatedDailyTimes));
+          }
+        });
+    }
+  }, []);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -67,21 +150,20 @@ export const TimerPage = () => {
   }, [isRunning, activeSubject]);
 
   useEffect(() => {
-    if (!isRunning && activeSubject) {
+    if (!isRunning && activeSubject && time > 0) {
       const updatedSubjectTimes = {
         ...subjectTimes,
         [activeSubject]: (subjectTimes[activeSubject] || 0) + time,
       };
       setSubjectTimes(updatedSubjectTimes);
-      localStorage.setItem("subjectTimes", JSON.stringify(updatedSubjectTimes));
+      localStorage.setItem(`subjectTimes-${currentDate}`, JSON.stringify(updatedSubjectTimes));
 
-      const currentDate = new Date().toLocaleDateString("en-CA"); // Format date as YYYY-MM-DD
       const updatedDailyTimes = {
         ...dailyTimes,
-        [currentDate]: (dailyTimes[currentDate] || 0) + time, // Preserve past records and update current day
+        [currentDate]: (dailyTimes[currentDate] || 0) + time,
       };
       setDailyTimes(updatedDailyTimes);
-      localStorage.setItem("dailyTimes", JSON.stringify(updatedDailyTimes));
+      localStorage.setItem(`dailyTimes-${currentDate}`, JSON.stringify(updatedDailyTimes));
 
       setTime(0);
     }
@@ -98,28 +180,28 @@ export const TimerPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 flex flex-col items-center pt-20">
-      <h1 className="text-4xl font-bold text-white mb-12">Record Study Time</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-12">Record Study Time</h1>
       <div className="flex justify-between items-start w-full max-w-5xl gap-8">
         <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
-          <h2 className="text-xl font-bold mb-4">Enter Subject</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Enter Subject</h2>
           <input
             type="text"
             placeholder="Enter subject and press Enter"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             onKeyPress={handleSubjectKeyPress}
-            className="px-4 py-2 rounded-lg shadow-md text-lg w-full mb-6"
+            className="px-4 py-2 rounded-lg shadow-md text-gray-900 w-full mb-6"
           />
           <div className="text-center mb-6">
-            <div className="text-2xl font-bold mb-4">
-              Active Subject: <span className="text-blue-500">{activeSubject || "None"}</span>
+            <div className="text-2xl font-bold mb-4 text-gray-900">
+              Active Subject: <span className="text-blue-700">{activeSubject || "None"}</span>
             </div>
-            <div className="text-2xl font-bold">
-              Time: <span className="text-green-500">{formatTime(time)}</span>
+            <div className="text-2xl font-bold text-gray-900">
+              Time: <span className="text-green-700">{formatTime(time)}</span>
             </div>
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-bold mb-4">Timer Controls</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Timer Controls</h2>
             <div className="flex space-x-4 justify-center">
               <button
                 onClick={handleStart}
@@ -146,12 +228,12 @@ export const TimerPage = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-lg p-6 w-1/2">
-          <h2 className="text-xl font-bold mb-4">Time Spent Per Subject</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Time Spent Per Subject</h2>
           <ul>
             {Object.entries(subjectTimes).map(([subject, time]) => (
               <li key={subject} className="text-lg mb-2 flex justify-between items-center">
                 <span>
-                  <span className="font-bold">{subject}:</span> {formatTime(time)}
+                  <span className="font-bold text-gray-900">{subject}:</span> <span className="text-gray-900">{formatTime(time)}</span>
                 </span>
                 <div className="flex space-x-2">
                   <button
@@ -170,8 +252,8 @@ export const TimerPage = () => {
               </li>
             ))}
           </ul>
-          <div className="mt-6 text-lg font-bold text-center">
-            Total Study Time: <span className="text-blue-500">{formatTime(totalStudyTime)}</span>
+          <div className="mt-6 text-lg font-bold text-center text-gray-900">
+            Total Study Time: <span className="text-blue-700">{formatTime(totalStudyTime)}</span>
           </div>
         </div>
       </div>

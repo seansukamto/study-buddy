@@ -127,35 +127,35 @@ export const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-    {menuOpen && (
-      <div className="md:hidden bg-[rgba(10,10,10,0.9)]">
-        <div className="px-2 pt-2 pb-3 space-y-1 flex flex-col">
-          <Link to="/" className={linkClass("/") + " w-full text-center"}>
-            Home
-          </Link>
-          <Link to="/create-group" className={linkClass("/create-group") + " w-full text-center"}>
-            Create Group
-          </Link>
-          <Link to="/find-group" className={linkClass("/find-group") + " w-full text-center"}>
-            Groups
-          </Link>
-          <Link to="/discussion/create" className={linkClass("/discussion/create") + " w-full text-center"}>
-            Create Discussion
-          </Link>
-          <Link to="/discussions" className={linkClass("/discussions") + " w-full text-center"}>
-            Discussions
-          </Link>
-          {!user && (
-            <Link
-              to="/login"
-              className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center w-full"
-            >
-              Log In
+      {menuOpen && (
+        <div className="md:hidden bg-[rgba(10,10,10,0.9)]">
+          <div className="px-2 pt-2 pb-3 space-y-1 flex flex-col">
+            <Link to="/" className={linkClass("/") + " w-full text-center"}>
+              Home
             </Link>
-          )}
+            <Link to="/create-group" className={linkClass("/create-group") + " w-full text-center"}>
+              Create Group
+            </Link>
+            <Link to="/find-group" className={linkClass("/find-group") + " w-full text-center"}>
+              Groups
+            </Link>
+            <Link to="/discussion/create" className={linkClass("/discussion/create") + " w-full text-center"}>
+              Create Discussion
+            </Link>
+            <Link to="/discussions" className={linkClass("/discussions") + " w-full text-center"}>
+              Discussions
+            </Link>
+            {!user && (
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center w-full"
+              >
+                Log In
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </nav>
   );
 };

@@ -44,3 +44,39 @@
 .read-the-docs {
   color: #888;
 } */
+
+/* Adjusted Branding image styles */
+.branding-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.branding-image {
+  width: 2px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjusted Navbar image styles */
+.navbar-image {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+.navbar-branding {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-text {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: white;
+}
