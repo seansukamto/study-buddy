@@ -25,7 +25,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
-          <Route path="/find-group/:id" element={<FindGroupPage />} />
+          <Route path="/find-group" element={<FindGroupPage />} />
           <Route path="/group/:id" element={<PostDetail />} />
           <Route path="/record-study-time" element={<TimerPage />} />
           <Route path="/calendar" element={<CalendarPage />} /> 

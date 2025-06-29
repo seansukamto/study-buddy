@@ -11,7 +11,7 @@ export const Navbar = () => {
   const displayName = user?.user_metadata.user_name || user?.email;
 
   const isActive = (path: string) => {
-    if (path === "/find-group/1") {
+    if (path === "/find-group") {
       return location.pathname.startsWith("/find-group");
     }
     if (path === "/discussion/create") {
@@ -51,7 +51,7 @@ export const Navbar = () => {
             <Link to="/create-group" className={linkClass("/create-group")}>
               Create Group
             </Link>
-            <Link to="/find-group/1" className={linkClass("/find-group/1")}>
+            <Link to="/find-group" className={linkClass("/find-group")}>
               Groups
             </Link>
             <Link to="/discussion/create" className={linkClass("/discussion/create")}>
@@ -127,41 +127,35 @@ export const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-[rgba(10,10,10,0.9)]">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link to="/" className={linkClass("/")}>
-              Home
-            </Link>
+    {menuOpen && (
+      <div className="md:hidden bg-[rgba(10,10,10,0.9)]">
+        <div className="px-2 pt-2 pb-3 space-y-1 flex flex-col">
+          <Link to="/" className={linkClass("/") + " w-full text-center"}>
+            Home
+          </Link>
+          <Link to="/create-group" className={linkClass("/create-group") + " w-full text-center"}>
+            Create Group
+          </Link>
+          <Link to="/find-group" className={linkClass("/find-group") + " w-full text-center"}>
+            Groups
+          </Link>
+          <Link to="/discussion/create" className={linkClass("/discussion/create") + " w-full text-center"}>
+            Create Discussion
+          </Link>
+          <Link to="/discussions" className={linkClass("/discussions") + " w-full text-center"}>
+            Discussions
+          </Link>
+          {!user && (
             <Link
-              to="/create"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              to="/login"
+              className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center w-full"
             >
-              Create Group
+              Log In
             </Link>
-            <Link
-              to="/communities"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-            >
-              Find Group
-            </Link>
-            <Link
-              to="/community/create"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-            >
-              Communities
-            </Link>
-            {!user && (
-              <Link
-                to="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600 text-center"
-              >
-                Log In
-              </Link>
-            )}
-          </div>
+          )}
         </div>
-      )}
+      </div>
+    )}
     </nav>
   );
 };
