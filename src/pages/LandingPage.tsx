@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import logo from "../assets/logo.jpg";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -37,7 +36,7 @@ export const LandingPage = () => {
         </p>
         <div className="branding-container mb-6">
           <img
-            src={logo}
+            src="/logo.jpg"
             alt="Study Buddy Branding"
             className="w-32 md:w-40 lg:w-48 h-auto mx-auto rounded-xl shadow-md"
           />
