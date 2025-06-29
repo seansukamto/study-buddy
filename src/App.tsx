@@ -13,6 +13,7 @@ import { ToDoPage } from "./pages/ToDoPage";
 import { CreateDiscussionPage } from "./pages/CreateDiscussionPage";
 import { DiscussionsPage } from "./pages/DiscussionsPage";
 import { DiscussionPage } from "./pages/DiscussionPage";
+import { useParams } from "react-router-dom";
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/create-group" element={<CreateGroupPage />} />
           <Route path="/find-group" element={<FindGroupPage />} />
-          <Route path="/group/:id" element={<PostDetail />} />
+          <Route path="/group/:id" element={<PostDetail postId={Number(useParams().id)} />} />
           <Route path="/record-study-time" element={<TimerPage />} />
           <Route path="/calendar" element={<CalendarPage />} /> 
           <Route path="/todo" element={<ToDoPage />} /> 

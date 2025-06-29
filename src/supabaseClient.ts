@@ -22,5 +22,5 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
-const todosTable = "todos";
-const groupsTable = "todo-groups";
+// const todosTable = "todos";
+// const groupsTable = "todo-groups";

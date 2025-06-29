@@ -30,7 +30,7 @@ export const LoginPage = () => {
     const email = prompt("Enter your email:");
     const password = prompt("Enter your password:");
     if (email && password) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         console.error("Email login error:", error.message);
         alert("Login failed. Please check your email and password.");

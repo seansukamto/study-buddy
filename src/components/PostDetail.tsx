@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { Post } from "./PostList";
 import { supabase } from "../supabaseClient";
 import { LikeButton } from "./LikeButton.tsx";
@@ -19,9 +19,11 @@ const fetchPostById = async (id: number): Promise<Post> => {
   return data as Post;
 };
 
-export const PostDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const postId = Number(id);
+interface PostDetailProps {
+  postId: number;
+}
+
+export const PostDetail: React.FC<PostDetailProps> = ({ postId }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -30,7 +32,6 @@ export const PostDetail = () => {
     queryFn: () => fetchPostById(postId),
     enabled: !!postId,
   });
-
 
   if (isLoading) {
     return <div> Loading posts...</div>;
