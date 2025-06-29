@@ -54,6 +54,9 @@ export const Navbar = () => {
             <Link to="/find-group" className={linkClass("/find-group")}>
               Groups
             </Link>
+            <Link to="/record-study-time" className={linkClass("/record-study-time")}>
+              Record
+            </Link>
             <Link to="/discussion/create" className={linkClass("/discussion/create")}>
               Create Discussion
             </Link>
@@ -138,6 +141,9 @@ export const Navbar = () => {
             </Link>
             <Link to="/find-group" className={linkClass("/find-group") + " w-full text-center"}>
               Groups
+            </Link>
+            <Link to="/record-study-time" className={linkClass("/record-study-time") + " w-full text-center"}>
+              Record
             </Link>
             <Link to="/discussion/create" className={linkClass("/discussion/create") + " w-full text-center"}>
               Create Discussion
